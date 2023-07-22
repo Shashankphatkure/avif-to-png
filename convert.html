@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>AVIF to PNG Converter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+      }
+
+      h1 {
+        text-align: center;
+        margin-top: 50px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 50px;
+      }
+
+      label {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      input[type="file"] {
+        margin-bottom: 20px;
+      }
+
+      .preview {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 50px;
+      }
+
+      .preview img {
+        margin: 10px;
+        max-width: 300px;
+      }
+
+      .preview a {
+        display: block;
+        margin: 10px;
+        text-align: center;
+      }
+
+      button[type="submit"] {
+        padding: 10px 20px;
+        font-size: 18px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      button[type="submit"]:hover {
+        background-color: #3e8e41;
+      }
+
+      button[type="submit"]:disabled {
+        background-color: gray;
+        cursor: default;
+      }
+
+      #download-all {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 18px;
+        background-color: #008CBA;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      #download-all:hover {
+        background-color: #006080;
+      }
+
+      #download-all:disabled {
+        background-color: gray;
+        cursor: default;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>AVIF to PNG Converter</h1>
+    <form>
+      <label for="avif-files">Select AVIF files to convert:</label>
+      <input type="file" id="avif-files" name="avif-files" accept=".avif" multiple required>
+      <button type="submit" id="convert-button">Convert</button>
+    </form>
+    <div class="preview"></div>
+    <button id="download-all" disabled>Download All</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+    <script>
+      const form = document.querySelector('form');
+      const preview = document.querySelector('.preview');
+      const downloadAllButton = document.querySelector('#download-all');
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const avifFiles = document.querySelector('#avif-files').files;
+        const pngFiles = [];
+        for (let i = 0; i < avifFiles.length; i++) {
+          const reader = new FileReader();
+          reader.readAsDataURL(avifFiles[i]);
+          reader.onload = () => {
+            const img = new Image();
+            img.src = reader.result;
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+              canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const outputFileName = avifFiles[i].name.replace('.avif', '.png');
+                const imgElement = document.createElement('img');
+                imgElement.src = url;
+                imgElement.alt = outputFileName;
+                preview.appendChild(imgElement);
+                const linkElement = document.createElement('a');
+                linkElement.href = url;
+                linkElement.download = outputFileName;
+                linkElement.textContent = 'Download';
+                preview.appendChild(linkElement);
+                pngFiles.push({ name: outputFileName, blob });
+              }, 'image/png');
+            };
+          };
+        }
+        downloadAllButton.disabled = false;
+        downloadAllButton.addEventListener('click', () => {
+          const zip = new JSZip();
+          pngFiles.forEach((pngFile) => {
+            zip.file(pngFile.name, pngFile.blob);
+          });
+          zip.generateAsync({ type: 'blob' }).then((blob) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'converted-images.zip';
+            link.click();
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

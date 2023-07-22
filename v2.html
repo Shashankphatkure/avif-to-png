@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>AVIF to PNG Converter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+      }
+
+      h1 {
+        text-align: center;
+        margin-top: 50px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 50px;
+      }
+
+      label {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      input[type="file"] {
+        margin-bottom: 20px;
+      }
+
+      button[type="submit"] {
+        padding: 10px 20px;
+        font-size: 18px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button[type="submit"]:hover {
+        background-color: #3e8e41;
+      }
+
+      a {
+        display: block;
+        text-align: center;
+        margin-top: 50px;
+        font-size: 18px;
+        color: #4CAF50;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .preview {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 50px;
+      }
+
+      .preview img {
+        max-width: 300px;
+        max-height: 200px;
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Protected File Converter</h1>
+    <form>
+      <label for="avif-files">Select .AVIF files to upload:</label>
+      <input type="file" id="avif-files" accept=".avif" multiple>
+      <button type="submit">Convert to PNG</button>
+    </form>
+    <div class="preview"></div>
+<script>
+  const form = document.querySelector('form');
+  const preview = document.querySelector('.preview');
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const avifFiles = document.querySelector('#avif-files').files;
+    for (let i = 0; i < avifFiles.length; i++) {
+      const reader = new FileReader();
+      reader.readAsDataURL(avifFiles[i]);
+      reader.onload = () => {
+        const img = new Image();
+        img.src = reader.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const outputFileName = avifFiles[i].name.replace('.avif', '.png');
+            const imgElement = document.createElement('img');
+            imgElement.src = url;
+            imgElement.alt = outputFileName;
+            preview.appendChild(imgElement);
+            const linkElement = document.createElement('a');
+            linkElement.href = url;
+            linkElement.download = outputFileName;
+            linkElement.textContent = 'Download';
+            preview.appendChild(linkElement);
+          }, 'image/png');
+        };
+      };
+    }
+  });
+</script>
+  </body>
+</html>

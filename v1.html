@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>AVIF to PNG Converter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+      }
+
+      h1 {
+        text-align: center;
+        margin-top: 50px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 50px;
+      }
+
+      label {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+
+      input[type="file"] {
+        margin-bottom: 20px;
+      }
+
+      button[type="submit"] {
+        padding: 10px 20px;
+        font-size: 18px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button[type="submit"]:hover {
+        background-color: #3e8e41;
+      }
+
+      a {
+        display: block;
+        text-align: center;
+        margin-top: 50px;
+        font-size: 18px;
+        color: #4CAF50;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>AVIF to PNG Converter</h1>
+    <form>
+      <label for="avif-file">Select an AVIF file to upload:</label>
+      <input type="file" id="avif-file" accept=".avif">
+      <button type="submit">Convert to PNG</button>
+    </form>
+    <a href="#" download="" id="download-link" style="display:none">Download PNG</a>
+    <script>
+      const form = document.querySelector('form');
+      const downloadLink = document.querySelector('#download-link');
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const avifFile = document.querySelector('#avif-file').files[0];
+        const reader = new FileReader();
+        reader.readAsDataURL(avifFile);
+        reader.onload = () => {
+          const img = new Image();
+          img.src = reader.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              const url = URL.createObjectURL(blob);
+              const outputFileName = avifFile.name.replace('.avif', '.png');
+              downloadLink.download = outputFileName;
+              downloadLink.href = url;
+              downloadLink.style.display = 'block';
+            }, 'image/png');
+          };
+        };
+      });
+    </script>
+  </body>
+</html>
